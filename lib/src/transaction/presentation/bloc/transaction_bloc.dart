@@ -28,7 +28,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     emit(state.copyWith(status: TransactionStatus.loading));
 
     final result = await transactionUseCase.getTransactions(
-      limit: event.limit,
+       event.limit,
     );
 
     result.fold(

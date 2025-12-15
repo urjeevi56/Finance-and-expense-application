@@ -9,7 +9,10 @@ abstract class TransactionLocalDataSource {
   Future<void> updateTransaction(TransactionModel transaction);
   Future<void> deleteTransaction(String id);
   Future<List<TransactionModel>> getTransactionsByCategory(String category);
-  Future<List<TransactionModel>> getTransactionsByDateRange(DateTime start, DateTime end);
+  Future<List<TransactionModel>> getTransactionsByDateRange(
+    DateTime start,
+    DateTime end,
+  );
   Future<double> getTotalIncome();
   Future<double> getTotalExpense();
 }
@@ -23,11 +26,11 @@ class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
   Future<List<TransactionModel>> getTransactions({int? limit}) async {
     final transactions = _transactionBox.values.toList();
     transactions.sort((a, b) => b.date.compareTo(a.date));
-    
+
     if (limit != null && transactions.length > limit) {
       return transactions.sublist(0, limit);
     }
-    
+
     return transactions;
   }
 
@@ -47,10 +50,13 @@ class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
   }
 
   @override
-  Future<List<TransactionModel>> getTransactionsByCategory(String category) async {
+  Future<List<TransactionModel>> getTransactionsByCategory(
+    String category,
+  ) async {
     final transactions = _transactionBox.values
         .where((transaction) => transaction.category == category)
         .toList();
+
     transactions.sort((a, b) => b.date.compareTo(a.date));
     return transactions;
   }
@@ -61,9 +67,13 @@ class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
     DateTime end,
   ) async {
     final transactions = _transactionBox.values
-        .where((transaction) => 
-            transaction.date.isAfter(start) && transaction.date.isBefore(end))
+        .where(
+          (transaction) =>
+              !transaction.date.isBefore(start) &&
+              !transaction.date.isAfter(end),
+        )
         .toList();
+
     transactions.sort((a, b) => b.date.compareTo(a.date));
     return transactions;
   }
@@ -71,20 +81,22 @@ class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
   @override
   Future<double> getTotalIncome() async {
     final transactions = _transactionBox.values
-        .where((transaction) => transaction.type == TransactionType.income)
-        .toList();
-    return transactions.fold(0.0, (sum, transaction) => sum + transaction.amount);
+        .where((t) => t.type == TransactionType.income);
+
+    return transactions.fold<double>(
+      0.0,
+      (sum, transaction) => sum + transaction.amount,
+    );
   }
 
   @override
   Future<double> getTotalExpense() async {
     final transactions = _transactionBox.values
-        .where((transaction) => transaction.type == TransactionType.expense)
-        .toList();
-    return transactions.fold(0.0, (sum, transaction) => sum + transaction.amount);
-  }
-}
+        .where((t) => t.type == TransactionType.expense);
 
-extension on FutureOr<double> {
-  FutureOr<double> operator +(double other) {}
+    return transactions.fold<double>(
+      0.0,
+      (sum, transaction) => sum + transaction.amount,
+    );
+  }
 }

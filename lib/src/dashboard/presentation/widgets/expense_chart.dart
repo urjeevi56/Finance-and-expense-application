@@ -5,18 +5,18 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 
 class ExpenseChart extends StatelessWidget {
   final Map<String, double> expensesByCategory;
-  
+
   const ExpenseChart({
     super.key,
     required this.expensesByCategory,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     final data = expensesByCategory.entries
         .map((entry) => ChartData(entry.key, entry.value))
         .toList();
-    
+
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(
@@ -33,8 +33,8 @@ class ExpenseChart extends StatelessWidget {
                 Text(
                   'Expense Distribution',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.info_outline, size: 20),
@@ -49,12 +49,19 @@ class ExpenseChart extends StatelessWidget {
               height: 300,
               child: SfCircularChart(
                 palette: AppColors.chartColors,
+                tooltipBehavior: TooltipBehavior(
+                  enable: true,
+                  format: 'point.x : ₹point.y',
+                ),
                 legend: Legend(
                   isVisible: true,
                   overflowMode: LegendItemOverflowMode.wrap,
                   position: LegendPosition.bottom,
                   textStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withOpacity(0.8),
                     fontSize: 12,
                   ),
                 ),
@@ -66,12 +73,10 @@ class ExpenseChart extends StatelessWidget {
                     dataLabelSettings: const DataLabelSettings(
                       isVisible: true,
                       labelPosition: ChartDataLabelPosition.inside,
-                      textStyle: TextStyle(fontSize: 12, color: Colors.white),
-                    ),
-                    enableTooltip: true,
-                    tooltipSettings: const TooltipSettings(
-                      enable: true,
-                      format: 'point.x : ₹point.y',
+                      textStyle: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ],
@@ -82,7 +87,7 @@ class ExpenseChart extends StatelessWidget {
       ),
     );
   }
-  
+
   void _showChartInfo(BuildContext context) {
     showDialog(
       context: context,
@@ -123,6 +128,6 @@ class ExpenseChart extends StatelessWidget {
 class ChartData {
   final String category;
   final double amount;
-  
+
   ChartData(this.category, this.amount);
 }
