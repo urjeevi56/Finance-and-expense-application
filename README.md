@@ -1,16 +1,24 @@
-# finanace_and_expense_app
+# finance and expense app
 
-A new Flutter project.
+A sophisticated cross-platform personal finance tracking application built with Flutter and BLoC state management.
 
-## Getting Started
+## 📱 Features
 
-This project is a starting point for a Flutter application.
+### ✅ Core Features
+- **Dashboard** with real-time balance, income/expense breakdown
+- **Transaction Management** (CRUD operations with validation)
+- **Budget Management** per category with visual warnings
+- **Expense Analytics** with interactive pie charts
+- **Offline Storage** using Hive for local persistence
+- **Responsive UI** optimized for mobile screens
 
-A few resources to get you started if this is your first Flutter project:
+### 🎯 Bonus Features
+- **Light/Dark Theme** toggle with smooth animations
+- **CSV Export** of transactions with share functionality
+- **Swipe-to-Delete** with undo confirmation
+- **Filtering System** by category and date range
+- **Beautiful Animations** throughout the app
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## 🏗️ Architecture
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### Clean Architecture with BLoC
