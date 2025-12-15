@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 class AppConstants {
   static const String appName = 'Smart Finance Tracker';
   static const String currencySymbol = '₹';
-  
+
   static const List<String> categories = [
     'Food',
     'Transport',
@@ -18,9 +18,9 @@ class AppConstants {
     'Education',
     'Investment',
     'Salary',
-    'Other'
+    'Other',
   ];
-  
+
   static const Map<String, Color> categoryColors = {
     'Food': Color(0xFFFF6B6B),
     'Transport': Color(0xFF4ECDC4),
@@ -33,8 +33,8 @@ class AppConstants {
     'Salary': Color(0xFF38B000),
     'Other': Color(0xFF6C757D),
   };
-  
-  static Map<String, dynamic> routes = {
+
+  static final Map<String, WidgetBuilder> routes = {
     '/': (context) => const DashboardScreen(),
     '/transactions': (context) => const TransactionsScreen(),
     '/add-transaction': (context) => const AddEditTransactionScreen(),
