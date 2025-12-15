@@ -60,8 +60,9 @@ void main() {
     blocTest<DashboardBloc, DashboardState>(
       'emits [loading, success] when LoadDashboardData succeeds',
       build: () {
-        when(() => mockTransactionUseCase.getTransactions(50))
-            .thenAnswer((_) async => Right(testTransactions));
+        when(() => mockTransactionUseCase.getTransactions(
+              limit: any(named: 'limit'),
+            )).thenAnswer((_) async => Right(testTransactions));
         return dashboardBloc;
       },
       act: (bloc) => bloc.add(LoadDashboardData()),
@@ -80,17 +81,20 @@ void main() {
         ),
       ],
       verify: (_) {
-        verify(() => mockTransactionUseCase.getTransactions(50)).called(1);
+        verify(() => mockTransactionUseCase.getTransactions(
+              limit: 50,
+            )).called(1);
       },
     );
 
     blocTest<DashboardBloc, DashboardState>(
       'emits [loading, error] when LoadDashboardData fails',
       build: () {
-        when(() => mockTransactionUseCase.getTransactions(50))
-            .thenAnswer(
-              (_) async => Left(CacheFailure('Database error')),
-            );
+        when(() => mockTransactionUseCase.getTransactions(
+              limit: any(named: 'limit'),
+            )).thenAnswer(
+          (_) async => Left(CacheFailure('Database error')),
+        );
         return dashboardBloc;
       },
       act: (bloc) => bloc.add(LoadDashboardData()),
@@ -102,7 +106,9 @@ void main() {
         ),
       ],
       verify: (_) {
-        verify(() => mockTransactionUseCase.getTransactions(50)).called(1);
+        verify(() => mockTransactionUseCase.getTransactions(
+              limit: 50,
+            )).called(1);
       },
     );
   });

@@ -8,13 +8,11 @@ class TransactionUseCase {
 
   TransactionUseCase(this.repository);
 
-
-  Future<Either<Failure, List<Transaction>>> getTransactions(int i, {
-    int limit = 0,
+  Future<Either<Failure, List<Transaction>>> getTransactions({
+    int? limit,
   }) async {
     return await repository.getTransactions(limit: limit);
   }
-
 
   Future<Either<Failure, void>> addTransaction(
     Transaction transaction,
@@ -22,17 +20,16 @@ class TransactionUseCase {
     return await repository.addTransaction(transaction);
   }
 
-  /// Update transaction
   Future<Either<Failure, void>> updateTransaction(
     Transaction transaction,
   ) async {
     return await repository.updateTransaction(transaction);
   }
 
-  /// Delete transaction
   Future<Either<Failure, void>> deleteTransaction(
     String id,
   ) async {
     return await repository.deleteTransaction(id);
   }
 }
+

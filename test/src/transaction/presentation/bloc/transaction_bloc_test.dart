@@ -52,8 +52,9 @@ void main() {
     blocTest<TransactionBloc, TransactionState>(
       'emits [loading, success] when LoadTransactions succeeds',
       build: () {
-        when(() => mockTransactionUseCase.getTransactions(any()))
-            .thenAnswer((_) async => Right(testTransactions));
+        when(() => mockTransactionUseCase.getTransactions(
+              limit: any(named: 'limit'),
+            )).thenAnswer((_) async => Right(testTransactions));
         return transactionBloc;
       },
       act: (bloc) => bloc.add(const LoadTransactions()),
@@ -62,19 +63,22 @@ void main() {
         TransactionState(
           status: TransactionStatus.success,
           transactions: testTransactions,
-          
+          categories: const ['Food'],
         ),
       ],
       verify: (_) {
-        verify(() => mockTransactionUseCase.getTransactions(any())).called(1);
+        verify(() => mockTransactionUseCase.getTransactions(
+              limit: any(named: 'limit'),
+            )).called(1);
       },
     );
 
     blocTest<TransactionBloc, TransactionState>(
       'emits [loading, error] when LoadTransactions fails',
       build: () {
-        when(() => mockTransactionUseCase.getTransactions(any()))
-            .thenAnswer(
+        when(() => mockTransactionUseCase.getTransactions(
+              limit: any(named: 'limit'),
+            )).thenAnswer(
           (_) async => Left(CacheFailure('Database error')),
         );
         return transactionBloc;
@@ -94,15 +98,18 @@ void main() {
       build: () {
         when(() => mockTransactionUseCase.addTransaction(any()))
             .thenAnswer((_) async => const Right(null));
-        when(() => mockTransactionUseCase.getTransactions(any()))
-            .thenAnswer((_) async => Right(testTransactions));
+        when(() => mockTransactionUseCase.getTransactions(
+              limit: any(named: 'limit'),
+            )).thenAnswer((_) async => Right(testTransactions));
         return transactionBloc;
       },
       act: (bloc) => bloc.add(AddTransactionEvent(testTransaction)),
       verify: (_) {
         verify(() => mockTransactionUseCase.addTransaction(testTransaction))
             .called(1);
-        verify(() => mockTransactionUseCase.getTransactions(any())).called(1);
+        verify(() => mockTransactionUseCase.getTransactions(
+              limit: any(named: 'limit'),
+            )).called(1);
       },
     );
 
@@ -111,8 +118,9 @@ void main() {
       build: () {
         when(() => mockTransactionUseCase.updateTransaction(any()))
             .thenAnswer((_) async => const Right(null));
-        when(() => mockTransactionUseCase.getTransactions(any()))
-            .thenAnswer((_) async => Right(testTransactions));
+        when(() => mockTransactionUseCase.getTransactions(
+              limit: any(named: 'limit'),
+            )).thenAnswer((_) async => Right(testTransactions));
         return transactionBloc;
       },
       act: (bloc) => bloc.add(UpdateTransactionEvent(testTransaction)),
@@ -127,8 +135,9 @@ void main() {
       build: () {
         when(() => mockTransactionUseCase.deleteTransaction(any()))
             .thenAnswer((_) async => const Right(null));
-        when(() => mockTransactionUseCase.getTransactions(any()))
-            .thenAnswer((_) async => Right(testTransactions));
+        when(() => mockTransactionUseCase.getTransactions(
+              limit: any(named: 'limit'),
+            )).thenAnswer((_) async => Right(testTransactions));
         return transactionBloc;
       },
       act: (bloc) => bloc.add(const DeleteTransactionEvent('1')),

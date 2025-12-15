@@ -19,7 +19,8 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   ) async {
     emit(state.copyWith(status: DashboardStatus.loading));
     
-    final result = await usecase.getTransactions(50);
+  final result = await usecase.getTransactions(limit: 50);
+
     
     result.fold(
       (failure) => emit(state.copyWith(
