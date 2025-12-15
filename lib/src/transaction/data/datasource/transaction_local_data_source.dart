@@ -1,7 +1,5 @@
-import 'dart:async';
-
-import 'package:finanace_and_expense_app/src/transaction/data/models/transaction_model.dart';
-import 'package:hive/hive.dart';
+import 'package:sqflite/sqflite.dart';
+import '../models/transaction_model.dart';
 
 abstract class TransactionLocalDataSource {
   Future<List<TransactionModel>> getTransactions({int? limit});
@@ -17,48 +15,63 @@ abstract class TransactionLocalDataSource {
   Future<double> getTotalExpense();
 }
 
-class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
-  final Box<TransactionModel> _transactionBox;
+class TransactionLocalDataSourceImpl
+    implements TransactionLocalDataSource {
+  final Database database;
 
-  TransactionLocalDataSourceImpl(this._transactionBox);
+  TransactionLocalDataSourceImpl(this.database);
 
   @override
   Future<List<TransactionModel>> getTransactions({int? limit}) async {
-    final transactions = _transactionBox.values.toList();
-    transactions.sort((a, b) => b.date.compareTo(a.date));
+    final maps = await database.query(
+      'transactions',
+      orderBy: 'date DESC',
+      limit: limit,
+    );
 
-    if (limit != null && transactions.length > limit) {
-      return transactions.sublist(0, limit);
-    }
-
-    return transactions;
+    return maps.map(TransactionModel.fromJson).toList();
   }
 
   @override
   Future<void> addTransaction(TransactionModel transaction) async {
-    await _transactionBox.put(transaction.id, transaction);
+    await database.insert(
+      'transactions',
+      transaction.toJson(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   @override
   Future<void> updateTransaction(TransactionModel transaction) async {
-    await _transactionBox.put(transaction.id, transaction);
+    await database.update(
+      'transactions',
+      transaction.toJson(),
+      where: 'id = ?',
+      whereArgs: [transaction.id],
+    );
   }
 
   @override
   Future<void> deleteTransaction(String id) async {
-    await _transactionBox.delete(id);
+    await database.delete(
+      'transactions',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   @override
   Future<List<TransactionModel>> getTransactionsByCategory(
     String category,
   ) async {
-    final transactions = _transactionBox.values
-        .where((transaction) => transaction.category == category)
-        .toList();
+    final maps = await database.query(
+      'transactions',
+      where: 'category = ?',
+      whereArgs: [category],
+      orderBy: 'date DESC',
+    );
 
-    transactions.sort((a, b) => b.date.compareTo(a.date));
-    return transactions;
+    return maps.map(TransactionModel.fromJson).toList();
   }
 
   @override
@@ -66,37 +79,34 @@ class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
     DateTime start,
     DateTime end,
   ) async {
-    final transactions = _transactionBox.values
-        .where(
-          (transaction) =>
-              !transaction.date.isBefore(start) &&
-              !transaction.date.isAfter(end),
-        )
-        .toList();
+    final maps = await database.query(
+      'transactions',
+      where: 'date BETWEEN ? AND ?',
+      whereArgs: [
+        start.toIso8601String(),
+        end.toIso8601String(),
+      ],
+      orderBy: 'date DESC',
+    );
 
-    transactions.sort((a, b) => b.date.compareTo(a.date));
-    return transactions;
+    return maps.map(TransactionModel.fromJson).toList();
   }
 
   @override
   Future<double> getTotalIncome() async {
-    final transactions = _transactionBox.values
-        .where((t) => t.type == TransactionType.income);
-
-    return transactions.fold<double>(
-      0.0,
-      (sum, transaction) => sum + transaction.amount,
+    final result = await database.rawQuery(
+      'SELECT SUM(amount) as total FROM transactions WHERE type = 0',
     );
+
+    return (result.first['total'] as num?)?.toDouble() ?? 0.0;
   }
 
   @override
   Future<double> getTotalExpense() async {
-    final transactions = _transactionBox.values
-        .where((t) => t.type == TransactionType.expense);
-
-    return transactions.fold<double>(
-      0.0,
-      (sum, transaction) => sum + transaction.amount,
+    final result = await database.rawQuery(
+      'SELECT SUM(amount) as total FROM transactions WHERE type = 1',
     );
+
+    return (result.first['total'] as num?)?.toDouble() ?? 0.0;
   }
 }

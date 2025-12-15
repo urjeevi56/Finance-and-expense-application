@@ -1,39 +1,14 @@
-import 'package:hive/hive.dart';
+enum TransactionTypeModel { income, expense }
 
-part 'transaction_model.g.dart';
-
-@HiveType(typeId: 0)
-enum TransactionType {
-  @HiveField(0)
-  income,
-  
-  @HiveField(1)
-  expense,
-}
-
-@HiveType(typeId: 1)
 class TransactionModel {
-  @HiveField(0)
   final String id;
-  
-  @HiveField(1)
   final String title;
-  
-  @HiveField(2)
   final double amount;
-  
-  @HiveField(3)
   final String category;
-  
-  @HiveField(4)
   final DateTime date;
-  
-  @HiveField(5)
-  final TransactionType type;
-  
-  @HiveField(6)
+  final TransactionTypeModel type;
   final String? description;
-  
+
   TransactionModel({
     required this.id,
     required this.title,
@@ -44,7 +19,7 @@ class TransactionModel {
     this.description,
   });
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {
       'id': id,
       'title': title,
@@ -56,14 +31,14 @@ class TransactionModel {
     };
   }
 
-  factory TransactionModel.fromMap(Map<String, dynamic> map) {
+  factory TransactionModel.fromJson(Map<String, dynamic> map) {
     return TransactionModel(
       id: map['id'],
       title: map['title'],
       amount: map['amount'],
       category: map['category'],
       date: DateTime.parse(map['date']),
-      type: TransactionType.values[map['type']],
+      type: TransactionTypeModel.values[map['type']],
       description: map['description'],
     );
   }

@@ -1,8 +1,7 @@
 import 'package:finanace_and_expense_app/core/constants/app_constant.dart';
 import 'package:finanace_and_expense_app/core/constants/color.dart';
 import 'package:finanace_and_expense_app/core/utils/formatters.dart';
-import 'package:finanace_and_expense_app/src/transaction/data/models/transaction_model.dart';
-import 'package:finanace_and_expense_app/src/transaction/domain/entities/transaction.dart' hide TransactionType;
+import 'package:finanace_and_expense_app/src/transaction/domain/entities/transaction.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
@@ -10,16 +9,18 @@ class TransactionListItem extends StatelessWidget {
   final Transaction transaction;
   final VoidCallback onTap;
   final VoidCallback onDelete;
-  
+
   const TransactionListItem({
     super.key,
     required this.transaction,
     required this.onTap,
     required this.onDelete,
   });
-  
+
   @override
   Widget build(BuildContext context) {
+    final isIncome = transaction.type == TransactionType.income;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Slidable(
@@ -27,7 +28,7 @@ class TransactionListItem extends StatelessWidget {
           motion: const ScrollMotion(),
           children: [
             SlidableAction(
-              onPressed: (context) => onDelete(),
+              onPressed: (_) => onDelete(),
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
               icon: Icons.delete,
@@ -52,22 +53,18 @@ class TransactionListItem extends StatelessWidget {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: transaction.type == TransactionType.income
+                      color: isIncome
                           ? AppColors.income.withOpacity(0.1)
                           : AppColors.expense.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      transaction.type == TransactionType.income
-                          ? Icons.arrow_upward
-                          : Icons.arrow_downward,
-                      color: transaction.type == TransactionType.income
-                          ? AppColors.income
-                          : AppColors.expense,
+                      isIncome ? Icons.arrow_upward : Icons.arrow_downward,
+                      color: isIncome ? AppColors.income : AppColors.expense,
                     ),
                   ),
                   const SizedBox(width: 16),
-                  
+
                   // Details
                   Expanded(
                     child: Column(
@@ -75,9 +72,10 @@ class TransactionListItem extends StatelessWidget {
                       children: [
                         Text(
                           transaction.title,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w600),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -90,13 +88,16 @@ class TransactionListItem extends StatelessWidget {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: AppConstants.categoryColors[transaction.category]?.withOpacity(0.1),
+                                color: AppConstants
+                                    .categoryColors[transaction.category]
+                                    ?.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
                                 transaction.category,
                                 style: TextStyle(
-                                  color: AppConstants.categoryColors[transaction.category],
+                                  color: AppConstants
+                                      .categoryColors[transaction.category],
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -105,9 +106,15 @@ class TransactionListItem extends StatelessWidget {
                             const SizedBox(width: 8),
                             Text(
                               Formatters.formatDate(transaction.date),
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withOpacity(0.5),
+                                  ),
                             ),
                           ],
                         ),
@@ -115,26 +122,34 @@ class TransactionListItem extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             transaction.description!,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withOpacity(0.6),
+                                ),
                           ),
                         ],
                       ],
                     ),
                   ),
-                  
+
                   // Amount
                   Text(
-                    '${transaction.type == TransactionType.income ? '+' : '-'}${Formatters.formatCurrency(transaction.amount)}',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: transaction.type == TransactionType.income
-                          ? AppColors.income
-                          : AppColors.expense,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    '${isIncome ? '+' : '-'}${Formatters.formatCurrency(transaction.amount)}',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(
+                          color:
+                              isIncome ? AppColors.income : AppColors.expense,
+                          fontWeight: FontWeight.w700,
+                        ),
                   ),
                 ],
               ),

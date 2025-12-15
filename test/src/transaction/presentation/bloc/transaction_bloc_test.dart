@@ -62,7 +62,7 @@ void main() {
         TransactionState(
           status: TransactionStatus.success,
           transactions: testTransactions,
-          categories: const ['Food'],
+          
         ),
       ],
       verify: (_) {

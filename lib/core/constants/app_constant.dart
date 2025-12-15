@@ -1,5 +1,4 @@
 import 'package:finanace_and_expense_app/src/budgets/presentation/screens/budget_screen.dart';
-import 'package:finanace_and_expense_app/src/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:finanace_and_expense_app/src/transaction/presentation/screens/add_edit_transaction_screen.dart';
 import 'package:finanace_and_expense_app/src/transaction/presentation/screens/transaction_screen.dart';
 import 'package:flutter/material.dart';
@@ -35,10 +34,10 @@ class AppConstants {
   };
 
   static final Map<String, WidgetBuilder> routes = {
-    '/': (context) => const DashboardScreen(),
     '/transactions': (context) => const TransactionsScreen(),
     '/add-transaction': (context) => const AddEditTransactionScreen(),
     '/edit-transaction': (context) => const AddEditTransactionScreen(),
     '/budgets': (context) => const BudgetsScreen(),
   };
 }
+

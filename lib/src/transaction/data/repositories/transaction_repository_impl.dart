@@ -1,8 +1,10 @@
 import 'package:dartz/dartz.dart';
 import 'package:finanace_and_expense_app/core/error/failures.dart';
 import 'package:finanace_and_expense_app/src/transaction/data/datasource/transaction_local_data_source.dart';
+import 'package:finanace_and_expense_app/src/transaction/data/mapper/transaction_mapper.dart';
 import 'package:finanace_and_expense_app/src/transaction/data/models/transaction_model.dart';
 import 'package:finanace_and_expense_app/src/transaction/domain/entities/transaction.dart' as domain_entity;
+import 'package:finanace_and_expense_app/src/transaction/domain/entities/transaction.dart';
 import 'package:finanace_and_expense_app/src/transaction/domain/repositories/transaction_repository.dart';
 
 class TransactionRepositoryImpl implements TransactionRepository {
@@ -10,15 +12,17 @@ class TransactionRepositoryImpl implements TransactionRepository {
 
   TransactionRepositoryImpl({required this.localDataSource});
 
-  @override
-  Future<Either<Failure, List<domain_entity.Transaction>>> getTransactions({int? limit}) async {
-    try {
-      final transactions = await localDataSource.getTransactions(limit: limit);
-      return Right(transactions.map((model) => _toEntity(model)).toList());
-    } catch (e) {
-      return Left(CacheFailure(e.toString()));
-    }
+@override
+Future<Either<Failure, List<Transaction>>> getTransactions({int? limit}) async {
+  try {
+    final models = await localDataSource.getTransactions(limit: limit);
+    final entities = models.map((m) => m.toEntity()).toList();
+    return Right(entities);
+  } catch (e) {
+    return Left(CacheFailure(e.toString()));
   }
+}
+
 
   @override
   Future<Either<Failure, domain_entity.Transaction>> getTransactionById(String id) async {
@@ -30,25 +34,27 @@ class TransactionRepositoryImpl implements TransactionRepository {
     }
   }
 
-  @override
-  Future<Either<Failure, void>> addTransaction(domain_entity.Transaction transaction) async {
-    try {
-      await localDataSource.addTransaction(_toModel(transaction));
-      return const Right(null);
-    } catch (e) {
-      return Left(CacheFailure(e.toString()));
-    }
+ @override
+Future<Either<Failure, void>> addTransaction(Transaction transaction) async {
+  try {
+    await localDataSource.addTransaction(transaction.toModel());
+    return const Right(null);
+  } catch (e) {
+    return Left(CacheFailure(e.toString()));
   }
+}
 
-  @override
-  Future<Either<Failure, void>> updateTransaction(domain_entity.Transaction transaction) async {
-    try {
-      await localDataSource.updateTransaction(_toModel(transaction));
-      return const Right(null);
-    } catch (e) {
-      return Left(CacheFailure(e.toString()));
-    }
+
+@override
+Future<Either<Failure, void>> updateTransaction(Transaction transaction) async {
+  try {
+    await localDataSource.updateTransaction(transaction.toModel());
+    return const Right(null);
+  } catch (e) {
+    return Left(CacheFailure(e.toString()));
   }
+}
+
 
   @override
   Future<Either<Failure, void>> deleteTransaction(String id) async {
@@ -141,17 +147,18 @@ class TransactionRepositoryImpl implements TransactionRepository {
     );
   }
 
-  TransactionModel _toModel(domain_entity.Transaction entity) {
-    return TransactionModel(
-      id: entity.id,
-      title: entity.title,
-      amount: entity.amount,
-      category: entity.category,
-      date: entity.date,
-      type: entity.type == domain_entity.TransactionType.income 
-          ? TransactionType.income 
-          : TransactionType.expense,
-      description: entity.description,
-    );
-  }
+TransactionModel _toModel(domain_entity.Transaction entity) {
+  return TransactionModel(
+    id: entity.id,
+    title: entity.title,
+    amount: entity.amount,
+    category: entity.category,
+    date: entity.date,
+    type: entity.type == domain_entity.TransactionType.income
+        ? TransactionTypeModel.income
+        : TransactionTypeModel.expense,
+    description: entity.description,
+  );
+}
+
 }
