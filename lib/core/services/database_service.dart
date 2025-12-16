@@ -36,5 +36,13 @@ class DatabaseService {
         description TEXT
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE budgets(
+        category TEXT PRIMARY KEY,
+        limit REAL NOT NULL,
+        spent REAL NOT NULL
+      )
+    ''');
   }
 }

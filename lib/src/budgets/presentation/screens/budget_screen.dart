@@ -1,4 +1,6 @@
+import 'package:finanace_and_expense_app/src/budgets/domain/entity/budget.dart';
 import 'package:finanace_and_expense_app/src/budgets/presentation/bloc/budget_bloc.dart';
+import 'package:finanace_and_expense_app/src/budgets/presentation/bloc/budget_event.dart';
 import 'package:finanace_and_expense_app/src/budgets/presentation/bloc/budget_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,9 +16,7 @@ class BudgetsScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () {
-              _showAddBudgetDialog(context);
-            },
+            onPressed: () => _showAddBudgetDialog(context),
           ),
         ],
       ),
@@ -27,40 +27,7 @@ class BudgetsScreen extends StatelessWidget {
           }
 
           if (state.budgets.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.account_balance_wallet,
-                    size: 64,
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No budgets set',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Set monthly budgets for your expense categories',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withOpacity(0.5),
-                        ),
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () {
-                      _showAddBudgetDialog(context);
-                    },
-                    child: const Text('Add Budget'),
-                  ),
-                ],
-              ),
-            );
+            return _emptyState(context);
           }
 
           return ListView.builder(
@@ -76,12 +43,11 @@ class BudgetsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBudgetCard(BuildContext context, Map<String, dynamic> budget) {
-    final category = budget['category'];
-    final limit = budget['limit'];
-    final spent = budget['spent'];
-    final percentage = (spent / limit * 100).clamp(0, 100);
-    final isOverBudget = spent > limit;
+
+  Widget _buildBudgetCard(BuildContext context, Budget budget) {
+    final percentage =
+        ((budget.spent / budget.limit) * 100).clamp(0, 100);
+    final isOverBudget = budget.spent > budget.limit;
 
     return Card(
       elevation: 2,
@@ -98,95 +64,47 @@ class BudgetsScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  category,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  budget.category,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w600),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isOverBudget ? Colors.red.withOpacity(0.1) : Colors.green.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    isOverBudget ? 'Over Budget' : 'Within Budget',
-                    style: TextStyle(
-                      color: isOverBudget ? Colors.red : Colors.green,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
+                _statusChip(isOverBudget),
               ],
             ),
             const SizedBox(height: 16),
-            
-            // Progress Bar
+
             LinearProgressIndicator(
               value: percentage / 100,
               minHeight: 8,
-              backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+              backgroundColor:
+                  Theme.of(context).colorScheme.surfaceVariant,
               valueColor: AlwaysStoppedAnimation<Color>(
                 isOverBudget ? Colors.red : Colors.green,
               ),
-              borderRadius: BorderRadius.circular(4),
             ),
             const SizedBox(height: 8),
-            
-            // Budget Details
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '₹${spent.toStringAsFixed(0)} of ₹${limit.toStringAsFixed(0)}',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+                  '₹${budget.spent.toStringAsFixed(0)} of ₹${budget.limit.toStringAsFixed(0)}',
                 ),
                 Text(
                   '${percentage.toStringAsFixed(1)}%',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  style: TextStyle(
                     color: isOverBudget ? Colors.red : Colors.green,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
-            
-            // Warning Message
+
             if (isOverBudget) ...[
               const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.red.withOpacity(0.2)),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.warning,
-                      color: Colors.red,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'You have exceeded your budget by ₹${(spent - limit).toStringAsFixed(2)}',
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              _overBudgetWarning(budget),
             ],
           ],
         ),
@@ -194,44 +112,135 @@ class BudgetsScreen extends StatelessWidget {
     );
   }
 
+
   void _showAddBudgetDialog(BuildContext context) {
+    final categoryController = TextEditingController();
+    final limitController = TextEditingController();
+
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Add Budget'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Category',
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Monthly Limit (₹)',
-                ),
-                keyboardType: TextInputType.number,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+      builder: (_) => AlertDialog(
+        title: const Text('Add Budget'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: categoryController,
+              decoration: const InputDecoration(labelText: 'Category'),
             ),
-            ElevatedButton(
-              onPressed: () {
-                // Add budget logic
-                Navigator.pop(context);
-              },
-              child: const Text('Add'),
+            TextField(
+              controller: limitController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Monthly Limit'),
             ),
           ],
-        );
-      },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              context.read<BudgetBloc>().add(
+                    AddBudget(
+                      Budget(
+                        category: categoryController.text,
+                        limit: double.parse(limitController.text),
+                        spent: 0.0,
+                      ),
+                    ),
+                  );
+              Navigator.pop(context);
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// -----------------------------
+  /// HELPERS
+  /// -----------------------------
+  Widget _statusChip(bool isOverBudget) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: isOverBudget
+            ? Colors.red.withOpacity(0.1)
+            : Colors.green.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        isOverBudget ? 'Over Budget' : 'Within Budget',
+        style: TextStyle(
+          color: isOverBudget ? Colors.red : Colors.green,
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  Widget _overBudgetWarning(Budget budget) {
+    final exceeded = budget.spent - budget.limit;
+
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.red.withOpacity(0.2)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.warning, color: Colors.red, size: 16),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'You have exceeded your budget by ₹${exceeded.toStringAsFixed(2)}',
+              style: const TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _emptyState(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.account_balance_wallet,
+            size: 64,
+            color:
+                Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No budgets set',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Set monthly budgets for your expense categories',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withOpacity(0.5),
+                ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () => _showAddBudgetDialog(context),
+            child: const Text('Add Budget'),
+          ),
+        ],
+      ),
     );
   }
 }

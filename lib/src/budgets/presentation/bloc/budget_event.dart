@@ -1,39 +1,40 @@
 import 'package:equatable/equatable.dart';
+import 'package:finanace_and_expense_app/src/budgets/domain/entity/budget.dart';
 
 abstract class BudgetEvent extends Equatable {
   const BudgetEvent();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
-class LoadBudgets extends BudgetEvent {}
+class LoadBudgets extends BudgetEvent {
+  const LoadBudgets();
+}
 
 class AddBudget extends BudgetEvent {
-  final String category;
-  final double limit;
-  
-  const AddBudget({required this.category, required this.limit});
-  
+  final Budget budget;
+
+  const AddBudget(this.budget);
+
   @override
-  List<Object> get props => [category, limit];
+  List<Object> get props => [budget];
 }
 
 class UpdateBudget extends BudgetEvent {
-  final String category;
-  final double limit;
-  
-  const UpdateBudget({required this.category, required this.limit});
-  
+  final Budget budget;
+
+  const UpdateBudget(this.budget);
+
   @override
-  List<Object> get props => [category, limit];
+  List<Object?> get props => [budget];
 }
 
 class DeleteBudget extends BudgetEvent {
   final String category;
-  
-  const DeleteBudget({required this.category});
-  
+
+  const DeleteBudget(this.category);
+
   @override
-  List<Object> get props => [category];
+  List<Object?> get props => [category];
 }
